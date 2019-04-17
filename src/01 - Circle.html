@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<title>Test</title>
+</head>
+<body>
+<canvas id="myc" width="300" height="300"></canvas  >  
+
+<div id="radius"></div>
+<div id="Increment"></div>
+
+<script type="text/javascript">
+
+var canvas=document.getElementById("myc");
+var ctx=canvas.getContext("2d");
+var r=5;
+var Increment=2;
+
+function drawCircle(x, y, r, color){
+ ctx.fillStyle= color; 
+ ctx.beginPath(); 
+ ctx.arc( x, y, r, 0, 2*Math.PI);
+ ctx.fill();
+}
+function gameLoop(){
+ 
+ ctx.clearRect(0, 0, canvas.width, canvas.height); 
+ drawCircle(140, 120, r, "red");
+ 
+ document.getElementById("radius").innerHTML="Radius: " +r;
+ document.getElementById("Increment").innerHTML="Increment: "+Increment;
+ 
+ 
+  r=r+Increment;
+  if(r>=80){Increment=-Increment;}
+  else if(r<=5){Increment=2;}
+ 
+}
+setInterval(gameLoop, 110);
+
+</script>
+</body>
+</html>

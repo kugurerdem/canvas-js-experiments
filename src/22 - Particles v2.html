@@ -1,0 +1,69 @@
+<html>
+	<head>
+		<title> Particles v2 </title>
+	</head>
+	<body bgcolor="#D0D0D0">
+		<center> 
+			<canvas id="canvas" width="650" height="550" style="border:2px solid #000000;">	
+			<p id="demo"> 				
+		</center>
+		
+		<script>
+			//Canvas values
+			var canvas = document.getElementById("canvas");
+			var ctx = canvas.getContext("2d");
+			var W = canvas.width;
+			var H = canvas.height;
+			
+			var FPS = 30;
+			
+			var particles = {};
+			var particleIndex = 0;
+			var particleNum = 1;
+			
+			function Particle(){
+				this.x = W/2;
+				this.y = H/2;
+				this.side = 10;
+				this.vx = Math.random() * 8 - 4;
+				this.vy = Math.random() * 8 - 4;
+				this.gravity = 0.1;
+				particles[particleIndex] = this;
+				this.id = particleIndex;
+				particleIndex++
+				this.life = 0;
+				this.maxLife = 100;
+			}
+			Particle.prototype.draw = function(){
+				this.x+= this.vx;
+				this.y+= this.vy;
+				//this.vy+= this.gravity;
+				this.life++
+				if( Math.random() < 0.1){
+					this.vx = Math.random() * 8 - 4;
+					this.vy = Math.random() * 8 - 4;
+				}
+				if(this.life >= this.maxLife){
+					delete particles[this.id];
+				}
+				
+				ctx.fillStyle = "rgba(255,255,255,0.8)";
+				ctx.fillRect(this.x,this.y,this.side,this.side);
+			}
+							
+			function loop(){
+				ctx.fillStyle = "rgba(0,0,0,0.5)";
+				ctx.fillRect(0,0,W,H);
+				
+				for(var i = 0; i < particleNum; i++){
+					new Particle();
+				}
+				
+				for(var i in particles){
+					particles[i].draw();
+				}
+				setTimeout(function(){loop();}, 1000/FPS);
+			}
+			
+			loop();
+		</script>

@@ -1,0 +1,141 @@
+<head> 
+<title> Momentum Balls by Ugur Erdem Kucuk </title>
+</head>
+
+<canvas id="canvas" width="500" height="500" style="border:2px solid #000000;"> </canvas>
+<script>
+
+
+//Canvas values
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+//Setting the width and height of the canvas
+var W = canvas.width;
+var H = canvas.height;
+
+
+var ballcount = 0;
+var ball = [];
+
+//Adds ball randomly
+function addBall () {
+    var dx = Math.random() >= 0.5 ? 1 : -1; 
+	var dy = Math.random() >= 0.5 ? 1 : -1; 
+
+   ball[ballcount] = {
+   
+   
+       // Radius will be 10 < n < 30
+	   radius: 20 * Math.random() + 10,
+	   
+	   x: W * Math.random(),
+	   y: H * Math.random(),
+	
+	
+	   // Velocity components
+	   vx: 3* Math.random() * dx,
+	   vy: 3* Math.random() * dy,
+	
+	   draw: function() {
+		   ctx.beginPath();
+		   ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+		   ctx.fillStyle = this.color;
+	 	   ctx.fill();
+	 	   ctx.closePath();
+	   }
+   };
+   
+    ballcount++
+}
+
+// Checks for wall
+function wallCheck(){
+  
+    for(i=0; i<ballcount; i++){
+	
+	    if(ball[i].y + ball[i].radius > H){
+	       ball[i].y = H - ball[i].radius -2;
+		   ball[i].vy = ball[i].vy * -1;
+	    }
+	   
+	    else if( ball[i].y < ball[i].radius) {
+	       ball[i].y = ball[i].radius +2;
+           ball[i].vy = ball[i].vy * -1;		
+        }
+	   
+	    if( ball[i].x + ball[i].radius > W){
+	       ball[i].x = W - ball[i].radius -2;
+		   ball[i].vx = ball[i].vx * -1;
+	    }
+        else if ( ball[i].x < ball[i].radius){
+	       ball[i].x = ball[i].radius +2;
+		   ball[i].vx = ball[i].vx * -1;
+ 	    }
+		
+	}
+}
+
+
+// When the balls colides each other
+function ballCollision() {
+
+   for(i=0; i < ballcount; i++){
+     
+        for(j=i+1; j < ballcount; j++){
+            
+            var distancex = Math.sqrt( Math.pow((ball[i].x- ball[j].x), 2));
+	        var distancey = Math.sqrt( Math.pow( (ball[i].y- ball[j]. y), 2 ));
+
+            if (distancex <= ball[i].radius + ball[j].radius){
+			    if (distancey <= ball[i].radius + ball[j].radius){
+			      
+				  var m1= ball[i].radius;
+			      var m2= ball[j].radius;
+			
+			      var v1 = (( m1 - m2)/(m1+m2))*ball[i].vx + (2* m2)/(m1 + m2)* ball[j].vx;
+			      var v2 = (( 2*m1)/(m1+m2))* ball[i].vx - ((m1-m2)/(m1+m2))* ball[j].vx;
+				  
+				  ball[i].vx = v1;
+				  ball[j].vx = v2;
+				  
+				  var v1 = (( m1 - m2)/(m1+m2))*ball[i].vy + (2* m2)/(m1 + m2)* ball[j].vy;
+			      var v2 = (( 2*m1)/(m1+m2))* ball[i].vy - ((m1-m2)/(m1+m2))* ball[j].vy;
+				  
+				  ball[i].vy = v1;
+				  ball[j].vy = v2;
+				 
+				  				  
+				}
+			}			
+		}	 
+    }
+}
+
+addBall();
+addBall();
+addBall();
+addBall();
+addBall();
+addBall();
+addBall();
+
+
+
+function gameLoop(){
+
+      ctx.clearRect(0, 0, W, H);
+	  
+	  wallCheck();
+	  ballCollision();
+	  
+	  for(i=0; i<ballcount; i++){
+	    ball[i].draw();
+		ball[i].x+= ball[i].vx;
+		ball[i].y+= ball[i].vy; 
+	  }
+}
+
+setInterval(gameLoop, 1000/120);
+ 
+</script>

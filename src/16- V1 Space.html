@@ -1,0 +1,84 @@
+<html>
+<head>  
+</head>
+<body> 
+
+<canvas id="canvas" width="500" height="500" style="border:2px solid #000000;"> </canvas>
+<p id="demo"> </p>
+<p id="demo2"> </p>
+<script>
+
+//Canvas values
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+var W = canvas.width;
+var H = canvas.height;
+
+angle = 0;
+angle2 = 0;
+angle3 = 90;
+angle4 = 200;
+function gameLoop(){
+  
+  ctx.clearRect(0,0,W,H);
+  
+  ctx.beginPath();
+  ctx.arc(W/2,H/2,30,0,2*Math.PI); 
+  ctx.fill()
+  
+  radius = angle * (Math.PI/180);
+  
+  x1= Math.cos(radius) *65;
+  y1= Math.sin(radius) *65;
+  
+  ctx.beginPath();
+  ctx.arc(W/2+x1,H/2+y1,15,0,2*Math.PI); 
+  ctx.fill()
+
+  
+  radius2 = angle2 * (Math.PI/180);
+
+  x2 = Math.cos(radius2) * 25;
+  y2 = Math.sin(radius2) * 25;
+  
+  ctx.beginPath();
+  ctx.arc(W/2+x1+x2,H/2+y1+y2,5,0,2*Math.PI); 
+  ctx.fill();
+  
+  radius3 = angle3 * (Math.PI/180);
+
+  x3 = Math.cos(radius3) * 120;
+  y3 = Math.sin(radius3) * 120;
+  
+  ctx.beginPath();
+  ctx.arc(W/2+x3,H/2+y3,20,0,2*Math.PI); 
+  ctx.fill();
+  
+  radius4 = angle4 * (Math.PI/180);
+
+  x4 = Math.cos(radius4) * 200;
+  y4 = Math.sin(radius4) * 200;
+  
+  ctx.beginPath();
+  ctx.arc(W/2+x4,H/2+y4,15,0,2*Math.PI); 
+  ctx.fill();
+
+  
+  ctx.beginPath();
+  ctx.moveTo(W/2,H/2);
+  ctx.lineTo(W/2+x1,H/2+y1);
+  ctx.lineTo(W/2+x1+x2, H/2+y1+y2);
+  ctx.moveTo(W/2,H/2);
+  ctx.lineTo(W/2+x3,H/2+y3);
+  ctx.stroke();
+
+  angle+=1;
+  angle2+=3; 
+  angle3+=0.5;
+  angle4+=0.25;
+}
+
+setInterval(gameLoop,1000/60);
+
+</script>

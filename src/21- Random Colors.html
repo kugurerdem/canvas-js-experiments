@@ -1,0 +1,41 @@
+<html>
+	<head>
+		<title> </title>
+	</head>
+	<body>
+		
+		<canvas id="canvas" width="400" height="400" style="border:0px solid #000000;">
+		<script>
+			//Canvas values
+			var canvas = document.getElementById("canvas");
+			var ctx = canvas.getContext("2d");
+			var W = canvas.width;
+			var H = canvas.height;
+			
+			var FPS = 1;
+			
+			var cellSide = 20;
+			
+			function loop(){
+			
+				for(var i = 0; i < W; i+=cellSide){
+
+					for(var j = 0; j < H; j+=cellSide){
+					
+						var rgb1 = Math.ceil(Math.random()*255);
+						var rgb2 = Math.ceil(Math.random()*255);
+						var rgb3 = Math.ceil(Math.random()*255);
+						
+						var rgbValue = "rgb("+rgb1+","+rgb2+","+rgb3+")";
+						
+						ctx.fillStyle = rgbValue;
+						ctx.fillRect(i,j,cellSide,cellSide);
+					}
+					
+				}
+				
+				setTimeout(function(){loop();},1000/FPS);
+			}
+			
+			loop();
+		</script>

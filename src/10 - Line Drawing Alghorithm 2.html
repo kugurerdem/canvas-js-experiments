@@ -1,0 +1,38 @@
+<canvas id="canvas" width="100" height="100" style="border:2px solid #000000;">></canvas>
+<script>
+
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+function line(x0, y0, x1, y1) {
+    
+	var slope = Math.abs( (y1-y0)/(x1-x0) );
+
+	// Directions
+    var dx = x1 > x0 ? 1 : -1;
+    var dy = y1 > y0 ? 1 : -1;	
+    // İncrease values
+	var x_inc= slope<=1 ? (dx * 1) : (dx/slope); 
+	var y_inc= slope<=1 ? (dy*slope) : (dy*1) ;
+	// Loop for n times
+	var n = Math.abs(y1-y0) >= Math.abs(x1-x0) ? Math.abs(y1-y0) : Math.abs(x1-x0);
+    
+    for(i=0; i<n; i++){
+	   
+	   ctx.fillRect(x0,y0,1,1);
+	   x0+= x_inc;
+	   y0+= y_inc;
+    }	
+	
+	
+}
+
+
+line(0,50, 100,50);
+line(50,0, 50,100);
+line(0,0, 100,100);
+line(100,0, 0, 100);
+line(10, 0, 0, 90);
+
+
+</script>

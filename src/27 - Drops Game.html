@@ -1,0 +1,351 @@
+<html>
+	<head>
+		<title> Drops </title>
+	</head>
+	<body bgcolor ="black">
+		<center>
+			<canvas id="canvas" width="1000" height="643" style="border:2px solid white;">
+		</center>
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"> </script>
+		<script> 
+			//Canvas values
+			var canvas = document.getElementById("canvas");	
+			var ctx = canvas.getContext("2d");
+			var W = canvas.width;
+			var H = canvas.height;
+				
+			//Inputs from user
+			var lastDownTarget;
+			var keyState = {}; 
+				
+			//MouseDown event for getting where the user is clicking.
+				document.addEventListener('mousedown', function(e){
+					lastDownTarget = e.target;
+				}, false);
+				
+				//Keyboard events
+				document.addEventListener('keydown', function(e){
+					if(lastDownTarget == canvas) {
+						if(e.keyCode == 32){
+							if(keyState[e.keyCode] == null)	keyState[e.keyCode] = true;
+							else keyState[e.keyCode] = false;
+						}
+						else{
+							e = e || window.event;
+							keyState[e.keyCode] = true;
+						}
+					}
+				}, false);
+				
+				document.addEventListener("keyup", function(e){
+					e = e || window.event;
+					keyState[e.keyCode] = null;
+				}, false);
+
+
+			var showscene = 0;
+				
+			//Our game class
+			function Game(){
+				this.gameFPS = 200;
+				
+				this.isRendering = false;
+				
+				this.scenes = new Array();
+				
+				this.addScene = function(scene){
+					scene.id = this.scenes.length;
+					this.scenes.push(scene);
+				}
+				
+				this.start = function(){
+					this.gameLoop();
+				}
+				
+				this.startRender = function(){
+					this.render();
+				}
+				
+				this.gameLoop = function(){
+					if(!this.isRendering){
+						this.isGameLooping = true;
+						THIS = this;
+						
+						for(var i = 0; i < THIS.scenes[showscene].gameObjects.length; i++){
+							THIS.scenes[showscene].gameObjects[i].update();
+						}
+						
+						this.isGameLooping = false;
+						setTimeout(function(){THIS.gameLoop();}, 1000/this.gameFPS);
+					}
+					else{
+						setTimeout(function(){THIS.gameLoop();}, 20);
+					}
+					
+				}
+				
+				this.render = function(){
+					if(!this.isGameLooping){
+						this.isRendering = true;
+						
+						ctx.fillStyle = "#1E90FF";
+						ctx.fillRect(0,0,W,H);
+						
+						for(var i = 0; i < THIS.scenes[showscene].gameObjects.length; i++){
+							THIS.scenes[showscene].gameObjects[i].draw();
+						}
+						
+						this.isRendering = false;
+						requestAnimationFrame(THIS.render);
+					}
+					else{
+						this.isRendering = true;
+						setTimeout(function(){THIS.render();}, 0);
+					}
+				}
+			}
+
+			//Scene class for making new scenes
+			function Scene(){
+				this.gameObjects = new Array();
+				this.addGameObject = function(object){
+					this.gameObjects.push(object);
+				}
+			}
+
+
+			//GameObject class
+			function GameObject(){
+				this.position = null;
+				this.dimention = null;
+				this.color = null;
+				this.vy = 0;
+				this.vx = 0;
+				
+				this.isColliding = function(x,y,obj){				
+					return x < obj.position.x + obj.dimention.w && 
+							y < obj.position.y + obj.dimention.h && 
+							obj.position.x < x + this.dimention.w && 
+							obj.position.y < y + this.dimention.h;
+				}
+							
+				this.update = function(){
+					
+				}
+				
+				this.draw = function(){
+					ctx.fillStyle = this.color;
+					ctx.fillRect(this.position.x,this.position.y,this.dimention.w,this.dimention.h);
+				}
+			}
+
+			function Position(x,y){
+				this.x = x;
+				this.y = y;
+			}
+
+			function Dimention(w,h){
+				this.w = w;
+				this.h = h;
+			}
+
+			//Player class
+			function Player(){
+				
+				this.colors = ["black","white","yellow"];
+				this.colorIndex = Math.floor(this.colors.length * Math.random() );
+				this.color = this.colors[this.colorIndex];
+				
+				this.move = 0;
+				this.movespeed = 1;
+				this.normalmovespeed = 1;
+				this.acc = 0.02;
+				
+				this.lastmove = null;
+				
+				this.update = function(){
+					if( keyState[37] ) {
+						if(this.lastmove == 37)	this.movespeed+=this.acc;
+						else this.movespeed = this.normalmovespeed;
+						
+						
+						this.move -= 1;
+						this.lastmove = 37;
+					}
+					if( keyState[39] ){
+						if(this.lastmove == 39) this.movespeed+=this.acc;
+						else this.movespeed = this.normalmovespeed;
+						
+						this.move += 1;
+						this.lastmove = 39;
+					}
+					if( !keyState[37] && !keyState[39]){
+						this.movespeed = this.normalmovespeed;
+					}
+					
+					this.vx = this.move * this.movespeed;
+					this.position.x = Math.max(Math.min(this.position.x + this.vx, W - this.dimention.w), 0);
+					
+					this.move = 0;
+					
+					if( keyState[32] ){
+						this.color = this.colors[this.colorIndex++ % this.colors.length];
+						keyState[32] = false;
+					}
+					
+				}
+			}
+			Player.prototype = $.extend({}, new GameObject, new Player);	
+
+			//Food class
+			function Food(){
+				this.colors = ["black","white","yellow"];
+				this.colorIndex = Math.floor(this.colors.length*Math.random());
+				this.color = this.colors[this.colorIndex];
+				
+				this.gravity = 0.001;
+				this.vy = 1;
+				
+				this.update = function(){
+					this.vy += this.gravity;
+					this.position = new Position(this.position.x,this.position.y+this.vy);
+					
+					if(this.isColliding(this.position.x,this.position.y,player)){
+						if( this.color === player.color ){
+							score.points++
+						}
+						else{
+							player.position.y-=player.dimention.h/2;
+							score.points--
+						}
+						this.setFood();
+					}
+					
+					if(this.position.y + this.dimention.h > player.position.y + player.dimention.h){
+						this.setFood();
+						score.points--
+						player.position.y-=player.dimention.h/2;
+					}
+				}
+				
+				this.setFood = function(){
+					this.position = new Position(W*Math.random() - this.dimention.w , -30);
+					this.position.x = Math.max(Math.min(this.position.x, W - this.dimention.w), 0);
+					this.vy = 1;
+					this.colorIndex = Math.floor(this.colors.length*Math.random());
+					this.color = this.color = this.colors[this.colorIndex];
+				}
+			}
+			Food.prototype = $.extend({}, new GameObject, new Food);
+
+
+			//Ground class
+			function Ground(){
+				this.color = "orange";
+				
+				this.update = function(){
+					this.position = new Position( 0, player.position.y+player.dimention.h);
+					this.dimention = new Dimention( W , H -(player.position.y+player.dimention.h) );
+				}
+				
+			}
+			Ground.prototype = $.extend({}, new GameObject, new Ground);
+
+			function Score(){
+				this.color = "black";
+				this.points = 0;
+				
+				this.update = function(){
+					if(this.points < 0){
+						showscene = gameover.id;
+					}
+				}
+				
+				this.draw = function(){
+					ctx.font="20px Comic Sans MS";
+					ctx.fillStyle = this.color;
+					ctx.fillText( this.points , W-25, H-5);
+				}
+			}
+
+			function pressStart(){
+				this.update = function(){
+					
+					if( keyState[32] ){
+						showscene = scene1.id;
+					}
+				}
+				
+				this.draw = function(){
+					ctx.font="35px Italic";
+					ctx.fillStyle = "white";
+					ctx.fillText( "press space to start the game" , 100, 150);
+					ctx.fillText( "press space to change color" , 100, 250);
+					ctx.fillText( "press space to change color" , 100, 250);
+					ctx.fillText( "Drops game by Ugur Erdem Kucuk" , 100, 500);
+					
+					ctx.fillStyle ="black";
+					ctx.fillRect(700,100,150,150);
+					ctx.fillStyle = "white";
+					ctx.fillRect(700,250,150,150);
+					ctx.fillStyle = "yellow";
+					ctx.fillRect(700,400,150,150);
+					
+				}
+			}
+
+			function GameOver(){
+				this.update = function(){
+					
+				if( keyState[32] ){
+						score.points = 0;
+						player.position = new Position(W/2-40,H-60);
+						showscene = scene1.id;
+					}
+				}
+				
+				this.draw = function(){
+					ctx.font="35px Italic";
+					ctx.fillStyle = "white";
+					ctx.fillText( "Game Over! Press space to play again" , 100, 150);
+				}
+				
+				
+			}
+
+			var game = new Game();
+
+			//Start scene
+			var start = new Scene();
+			start.addGameObject(new pressStart() );
+			game.addScene(start);
+
+			//Scene1
+			var scene1 = new Scene();
+			var player = new Player();
+			player.position = new Position(W/2-40,H-60);
+			player.dimention = new Dimention(80,30);
+			var food = new Food();
+			food.position = new Position(50 , -30);
+			food.dimention = new Dimention(26,26);
+			var ground = new Ground();
+			var score = new Score();
+			scene1.addGameObject(player);
+			scene1.addGameObject(ground);
+			scene1.addGameObject(food);
+			scene1.addGameObject(score);
+			game.addScene(scene1);
+
+			//GameOver
+			var gameover = new Scene();
+			gameover.addGameObject(new GameOver());
+			game.addScene(gameover);
+
+
+			game.start();
+			game.startRender();
+		
+		</script>
+	</body>
+</html>

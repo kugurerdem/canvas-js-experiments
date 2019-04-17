@@ -1,0 +1,83 @@
+<canvas id="canvas" width="750" height="500" style="border:2px solid #000000;">></canvas>
+
+<script>
+
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+
+var w = canvas.width;
+var h = canvas.height;
+var canvasData = ctx.getImageData(0, 0, w, h);
+
+var rate = 0.3;
+
+var fps = 0;
+
+function drawPixel (x, y, r, g, b, a) {
+	var index = (x + y * w) * 4;
+
+	canvasData.data[index + 0] = r;
+	canvasData.data[index + 1] = g;
+	canvasData.data[index + 2] = b;
+	canvasData.data[index + 3] = a;
+}
+
+
+function doting(){  
+	var index = 0;
+	
+	for(var y = 0; y < h; y++) {
+		for(var x = 0; x < w; x++) {
+			//var dot = 55 * Math.sign(y % 15) * Math.sign(x % 15) + 200;
+			var dot = 255 * (Math.random() > rate ? 1 : 0);
+			//var dot = 255;
+			
+			canvasData.data[index++] = dot;
+			canvasData.data[index++] = dot;
+			canvasData.data[index++] = dot;
+			canvasData.data[index++] = 255;
+		}
+	}
+	
+	ctx.putImageData(canvasData, 0, 0);
+	
+	fps++;
+	setTimeout(doting, 0);
+}
+
+function doting2(){  
+	
+	var m_canvas = document.createElement('canvas');
+	m_canvas.width = w;
+	m_canvas.height = h;
+	var m_context = m_canvas.getContext('2d');
+		
+	var index = 0;
+	var cd = m_context.getImageData(0, 0, w, h);
+	var d = cd.data;
+
+	for(var index = 0; index < w * h * 4; index += 4) {
+			//var dot = 55 * Math.sign(y % 15) * Math.sign(x % 15) + 200;
+			var dot = 255 * (Math.random() > rate ? 1 : 0);
+			//var dot = 255;
+			
+			d[index+0] = dot;
+			d[index+1] = dot;
+			d[index+2] = dot;
+			d[index+3] = 255;
+	}
+	
+	m_context.putImageData(cd, 0, 0);
+	
+	ctx.drawImage(m_canvas, 0, 0);
+	
+	fps++;
+	setTimeout(doting2, 0);
+}
+
+setInterval(function (){f = fps; fps = 0; console.log(f);}, 1000);
+
+setTimeout(doting2, 0);
+
+</script>

@@ -1,0 +1,132 @@
+<html>
+<head>  
+</head>
+<body> 
+
+<canvas id="canvas" width="500" height="500" style="border:2px solid #000000;"> </canvas>
+<p id="demo"> </p>
+<p id="demo2"> </p>
+<p id="demo3"> </p>
+<script>
+
+//Canvas values
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+var W = canvas.width;
+var H = canvas.height;
+
+document.onmousemove=MouseMove;
+document.onmousedown=MouseClick;
+var objects = [];
+var miss = 0;
+var shoot = 0;
+
+//Gets mouse coordinates every move
+function MouseMove(){
+	MouseY=event.y -8;
+	MouseX=event.x -8;
+	coords= " X: " + MouseX + " Y: " +MouseY;
+	document.getElementById("demo").innerHTML = coords;
+}
+
+
+function MouseClick(){
+   clickdetection();
+}
+
+//Shape class
+function Shape(x,y){
+    this.x = x;
+    this.y = y;
+} 
+//Ball class
+function Ball(r,vr){
+    
+	this.radius = r;
+    this.vr = vr;   
+	
+	this.draw= function(){
+	  
+	  this.radius= this.radius - this.vr;
+	  
+      ctx.beginPath();
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2);
+      ctx.fillStyle = this.color;
+      ctx.fill();
+      ctx.closePath();
+    };  
+
+}
+
+//Adding ball object and Ball prototypes
+var ball = [];
+objects[objects.length] = ball;
+
+function addBall(x,y,r,vr){
+    Ball.prototype = new Shape(x,y);
+    ball[ball.length] = new Ball(r,vr);
+}
+
+
+// Checks for balls radius 
+function radiuscheck(){
+   for(i=0; i<ball.length; i++){
+      if(ball[i].radius <= 0){
+	     ball[i]=null;
+		 delete ball[i]; 
+		 ball.splice(i,1);
+		 miss++
+	  } 
+   } 
+}
+
+//Checks for if player clicked one of the balls
+function clickdetection(){
+   for(i=0; i<ball.length; i++){
+     if( MouseX > ball[i].x - ball[i].radius && MouseX < ball[i].x + ball[i].radius){
+	    if(MouseY > ball[i].y - ball[i].radius && MouseY < ball[i].y + ball[i].radius){
+		 ball[i]=null;
+		 delete ball[i]; 
+		 ball.splice(i,1);
+		 shoot++
+		}
+	 }     
+   }
+}
+
+var spawnballtime= 1100;
+var vr = 0.05;
+
+function difficult(){
+    
+	if( shoot > 0 && shoot%10 == 0){
+	    if(spawnballtime > 600)spawnballtime -= 100;
+		if(vr<0.075) vr+=0.005;
+		mod += 10;
+	}
+}
+
+function addingballs(){
+    addBall(35 + (W-70)*Math.random(), 35 + (H-70)*Math.random(), 15, vr);
+}
+
+function gameLoop(){
+   
+    ctx.clearRect(0,0, W,H);    
+    radiuscheck();
+	
+
+    for(i=0; i<ball.length; i++){
+	  ball[i].draw();
+	}
+    
+    document.getElementById("demo2").innerHTML = " SHOOT: " + shoot + " MISS: " + miss;	
+	document.getElementById("demo3").innerHTML = " SPAWN BALL TIME: " + (spawnballtime/1000) + " second(s) ";	
+}
+
+setInterval(gameLoop, 1000/120);
+setInterval(addingballs, spawnballtime);
+setInterval(difficult, 1000);
+
+</script>

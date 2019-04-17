@@ -1,0 +1,61 @@
+<html>
+	<head>
+		<title> Possibility </title>
+	</head>
+	<body>
+		<canvas id="myCanvas" width="300" height="20" style="border:1px solid #d3d3d3;"> </canvas>
+		<p id="demo"> </p>
+		<script>
+			
+			var c = document.getElementById("myCanvas");
+			var	ctx = c.getContext("2d");
+			
+			var W = c.width;
+			var H = c.height;
+			
+			var FPS = 1;
+			
+			var colors = ["red","blue","green","gray","yellow"];
+			var colorsValue = [0,0,0,0,0];
+
+			var tryforsec = 5;
+			var totalTry = 0;
+			
+			function loop(){
+				
+				for(var i = 0; i < tryforsec; i++){
+					
+					var random = Math.floor( Math.random() * colorsValue.length ); 
+					
+					colorsValue[random] += 1;
+					totalTry += 1;
+				}
+				
+				setTimeout(function(){ render();}, 0);
+			}
+			
+			
+			function render(){
+				ctx.clearRect(0,0,W,H);
+				
+				var w = 0;
+				
+				var text = "";
+				for(var i = 0; i < colorsValue.length; i++){
+					ctx.fillStyle = colors[i];
+					ctx.fillRect(w,0, (colorsValue[i] / totalTry) * W,H);
+					w+= (colorsValue[i] / totalTry) * W;
+				
+					text+= colors[i] + " : " + colorsValue[i]/totalTry + "<br>";
+				}
+				text += "Total Try : " + totalTry + "<br> Try for second: " + tryforsec;
+				
+				document.getElementById("demo").innerHTML = text ; 
+				
+				setTimeout(function(){ loop();}, 1000/FPS);
+			}
+			loop();
+			
+		</script>
+	</body>
+</html>

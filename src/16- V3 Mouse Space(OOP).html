@@ -1,0 +1,119 @@
+<html>
+<head>  
+</head>
+<body> 
+<center>
+<canvas id="canvas" width="1300" height="643" style="border:0px solid #000000;"> </canvas>
+<p id="demo"> </p>
+<p id="demo2"> </p>
+</center>
+<script>
+
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+var W = canvas.width;
+var H = canvas.height;
+
+var center = {    
+	 finalx: W/2,
+	 finaly: H/2
+}
+
+document.onmousemove=MouseMove;
+
+function MouseMove(){
+	MouseY=event.y  ;
+	MouseX=event.x -24;
+	}
+
+// Ball class
+function Ball(bound, d ,angle, angleinc, r, color){
+   
+   this.bound = bound;
+   this.angle = angle*(Math.PI/180);
+   this.angleinc = angleinc*(Math.PI/180);
+   this.d = d;
+   this.x = Math.cos(this.angle)*d;
+   this.y= Math.sin(this.angle)*d;
+   this.finalx = this.x + this.bound.finalx;
+   this.finaly = this.y + this.bound.finaly;
+   this.r= r;
+   this.color = color;
+   
+   this.draw = function(){
+   
+        this.x = Math.cos(this.angle)*d;
+        this.y= Math.sin(this.angle)*d;
+		this.angle+=this.angleinc;
+		this.finalx = this.x + this.bound.finalx;
+        this.finaly = this.y + this.bound.finaly;
+		
+		//Draw line for bound
+		ctx.beginPath();
+        ctx.moveTo(this.bound.finalx,this.bound.finaly);
+        ctx.lineTo(this.bound.finalx+this.x,this.bound.finaly+this.y);
+		ctx.stroke();
+	
+		//Draw ball
+		ctx.beginPath();
+        ctx.arc(this.bound.finalx+this.x, this.bound.finaly+this.y, this.r, 0, Math.PI*2);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+        ctx.closePath();
+        
+    }
+}
+
+var ball = [];
+
+function addBall(bound, d ,angle, angleinc, r, color){
+   ball[ball.length]= new Ball(bound, d ,angle, angleinc, r, color);
+}
+/*
+addBall(center, 50, 1,1, 5, "black");
+addBall(center,30,1,2,10,"black");
+addBall(ball[1],30,1,4,2,"black");
+addBall(ball[2],15,1,8,2,"red");
+*/
+
+/*
+addBall(center, 50, 0, 0.5, 5, "black");
+addBall(ball[0], 40, 1,1, 4, "black");
+addBall(ball[1], 30, 1,2, 3,  "red");
+addBall(ball[2], 20, 1,4, 2, "black");
+addBall(ball[3], 10, 1,8, 2, "red");
+*/
+addBall(center, 50, 120, 0.5, 5, "green");
+addBall(center, 50, 240, 0.5, 5, "green");
+addBall(center, 50, 360, 0.5, 5, "green");
+for(i=0; i<500; i++){
+  r =  Math.floor((ball.length-1) * Math.random());
+  dir = Math.random()>0.5? -1 : 1;
+  addBall(ball[r], 30*Math.random()+30, 360*Math.random(), dir*(2*Math.random()+0.5), 2*Math.random()+2, (Math.random()>0.5? "red" : "black"));
+
+}
+function gameLoop(){
+
+     ctx.clearRect(0,0,W,H);
+
+     //Draw all balls
+     for(i=0; i<ball.length; i++) {
+        ball[i].draw();
+     }	 
+	 
+	radian = Math.atan2(MouseY-center.finaly, MouseX-center.finalx);
+	deltax = Math.abs(MouseX-center.finalx);
+	deltay = Math.abs(MouseY - center.finaly);
+	speed = Math.sqrt(deltax*deltax + deltay*deltay)/50;
+	center.finalx +=Math.cos(radian)*speed;
+    center.finaly +=Math.sin(radian)*speed;
+	
+	ctx.fillStyle= "black";
+	ctx.font="10px Georgia";
+    ctx.fillText("By Ugur Erdem Kucuk",W-125,H-25);
+ }
+
+setInterval(gameLoop,1000/60);
+
+</script>

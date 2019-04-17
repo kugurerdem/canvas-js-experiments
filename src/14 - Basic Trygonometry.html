@@ -1,0 +1,61 @@
+<head> 
+<title> </title>
+</head>
+
+<canvas id="canvas" width="500" height="500" style="border:2px solid #000000;"> </canvas>
+<p id="demo"> </p>
+<p id="demo2"> </p>
+<script>
+
+//Canvas values
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+//Setting the width and height of the canvas
+var W = canvas.width;
+var H = canvas.height;
+
+document.onmousemove=MouseMove;
+
+function MouseMove(){
+	MouseY=event.y - 258;
+	MouseX=event.x - 258;
+	coords= " X: " + MouseX + " Y: " +MouseY;
+    document.getElementById("demo").innerHTML = coords ;    
+}
+
+
+function gameLoop(){
+
+    ctx.clearRect(0,0,W,H);
+    
+	//Draw triangle
+	ctx.beginPath();
+    ctx.moveTo(W/2,H/2);
+	ctx.fillText("A",W/2-10,H/2)
+    ctx.lineTo(MouseX+W/2,MouseY+H/2);
+    ctx.fillText("B",MouseX+W/2 +10 , MouseY+H/2 );
+    ctx.lineTo(MouseX+W/2, H/2);
+	ctx.fillText("C",MouseX+W/2+10,H/2)
+    ctx.lineTo(W/2, H/2);
+    ctx.stroke();
+	ctx.closePath();
+    //	
+	radius = Math.atan2(MouseY, MouseX);
+	angle = radius * (180/Math.PI);
+	c = Math.sqrt( MouseY*MouseY + MouseX*MouseX );
+    a = Math.abs(Math.sin(radius) * c);
+	b = Math.abs(Math.cos(radius) * c);
+
+	
+    
+    
+	document.getElementById("demo2").innerHTML = "c= " + c+ "<br> b= " + b + "<br> a= " + a;    
+	
+}
+
+
+setInterval(gameLoop,1000/60);
+
+
+</script>

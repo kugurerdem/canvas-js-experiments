@@ -1,0 +1,43 @@
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+<title> Recursional Rectangle </title>
+<canvas id="canvas" width="300" height="500"></canvas >  
+<script>
+
+
+//Canvas variables
+var c=document.getElementById("canvas");
+var ctx=c.getContext("2d");
+
+// ClearLoop comes after then RecursionLoop 
+function ClearLoop(x,y, static_x, static_y, inc) {  
+
+   var rectLength= canvas.height-2*y;
+   var rectWidth= canvas.width-2*x;
+   ctx.clearRect(x, y, rectWidth , rectLength); 
+   
+   if( x > static_x && y > static_y) { setTimeout(function(){ ClearLoop(x-inc,y-inc, static_x, static_y, inc) }, 100); }
+   else { RecursionLoop(x,y, static_x, static_y, inc); }
+   }
+
+// x and y are the start points
+// static_x and static_y will be the same value all the time for calculations
+// inc means ""Increment""
+function RecursionLoop(x,y, static_x, static_y, inc) {
+
+   var rectLength= canvas.height-2*y;
+   var rectWidth= canvas.width-2*x;
+   
+   ctx.strokeRect(x,y,rectWidth,rectLength);
+   
+   if(x < canvas.width/2 && y < canvas.height/2 ) { setTimeout(function(){ RecursionLoop(x+inc,y+inc, static_x, static_y, inc) }, 100); }
+   else { ClearLoop( x,y, static_x, static_y, inc); }
+}
+
+
+RecursionLoop(50,50, 50, 50, 5);
+
+
+
+</script>

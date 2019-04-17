@@ -1,0 +1,111 @@
+<html>
+	<head>
+		<title>
+			Drag Algorithm
+		</title>
+	</head>
+	<body>
+		<canvas id="canvas" width="650" height="550" style="border:2px solid #000000;"> </canvas> 
+		<p id="demo"> </p>
+		
+		<script>
+			//INPUTS FROM MOUSE
+			var MouseStatement = false;
+			var MouseState = null;
+			
+			var MouseX = 0;
+			var MouseY = 0;
+			var MousePositions = new Array(2);
+
+			document.onmousemove = function(){
+				MouseX = event.x -8;
+				MouseY = event.y -8;
+				MousePositions.push([MouseX,MouseY]);
+				MousePositions.splice(0,1);
+			}
+			
+			document.onmousedown = function(){
+				MouseStatement = true;
+				if(MouseState == null) MouseState = true;
+				else MouseState = false;
+				
+			}
+			
+			document.onmouseup = function(){
+				MouseStatement = false;
+				MouseState = null;
+			}
+			
+			
+			//Canvas values
+			var canvas = document.getElementById("canvas");
+			var ctx = canvas.getContext("2d");
+			
+			var W = canvas.width;
+			var H = canvas.height;
+			
+			//Frame per second
+			var FPS = 60;
+			
+			//Objects data
+			var objects = {};
+			objectIndex = 0;
+			
+			//Our object class
+			function DragObject(x,y){
+				objects[objectIndex] = this;
+				objectIndex++
+				
+				this.x = x;
+				this.y = y;
+				this.side = 50;
+				
+				this.isClicked = false;
+				
+				this.update = function(){
+					
+					if( MouseX > this.x && MouseX < this.x + this.side && 
+						MouseY > this.y && MouseY < this.y + this.side && 
+						MouseState ){
+							this.isClicked = true;
+						}
+						
+					if( this.isClicked && MouseStatement){
+						this.x = MouseX - this.side/2;
+						this.y = MouseY - this.side/2;
+
+					}
+					
+					else{
+						this.isClicked = false;
+					}
+				}
+				
+				this.draw = function(){
+					ctx.fillStyle = "black";
+					ctx.fillRect(this.x,this.y,this.side,this.side);
+				}
+			}
+			
+			new DragObject(30,30);
+			
+			//Game loop class
+			function loop(){
+				ctx.clearRect(0,0,W,H);
+				
+				for( var i in objects){
+					objects[i].update();
+					objects[i].draw();
+				}
+				
+				document.getElementById("demo").innerHTML = MouseState ;    
+				
+				setTimeout(function(){loop();},1000/FPS);
+			}
+			
+			loop();
+		
+		</script>
+	</body>
+</html>
+		

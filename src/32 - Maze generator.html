@@ -1,0 +1,155 @@
+<html>
+	<head>
+		<title> </title>
+	</head>
+	<body>
+		<center> 
+			<canvas id="canvas" width="500" height="500"> </canvas>
+		</center>
+		<script>
+			//Canvas values
+			var canvas = document.getElementById("canvas");
+			var ctx = canvas.getContext("2d");
+			
+			var W = canvas.width;
+			var H = canvas.height;
+			
+			//Cell Class
+			var Cell = function(){
+				this.visitC = 0;
+				
+				this.rightWall = true;
+				this.leftWall = true;
+				this.upWall = true;
+				this.downWall = true;
+			}
+			
+			//Maze Class
+			var Maze = function(w,h){
+				this.w = w;
+				this.h = h;
+				
+				this.cellCount = 0;
+				this.path = new Array();
+				
+				this.cells = new Array();
+				
+				for(var i = 0; i < this.w; i++){
+					this.cells[i] = new Array();
+					for(var j = 0; j < this.h; j++){
+						this.cells[i][j] = new Cell();
+					}
+				}
+				
+				this.currentx = Math.floor(this.cells.length * Math.random());
+				this.currenty = Math.floor(this.cells[this.currentx].length * Math.random());
+				this.path.push([this.currentx,this.currenty]);
+				this.cells[this.currentx][this.currenty].visitC = 1;
+				
+			}
+			Maze.prototype.generate = function(){
+				var canGo = new Array();
+				
+				//Checks for the cells that we can go
+				if(this.currentx-1 > -1 && this.cells[this.currentx-1][this.currenty].visitC == 0){ 
+					canGo.push([this.currentx-1,this.currenty])
+				}
+				if(this.currentx+1 < this.w && this.cells[this.currentx+1][this.currenty].visitC == 0){
+					canGo.push([this.currentx+1,this.currenty])
+				}
+				if(this.currenty-1 > -1 && this.cells[this.currentx][this.currenty-1].visitC == 0){
+					canGo.push([this.currentx,this.currenty-1])
+				}
+				if(this.currenty+1 < this.h && this.cells[this.currentx][this.currenty+1].visitC == 0){
+					canGo.push([this.currentx,this.currenty+1])
+				}
+				
+				if(canGo.length){ //If there is cells that we can go
+					var random = canGo[Math.floor(canGo.length * Math.random())];
+					
+					if(random[0] - this.currentx == 1){
+						//Going to right
+						this.cells[this.currentx][this.currenty].rightWall = false;
+						this.cells[this.currentx+1][this.currenty].leftWall = false;
+					}
+					
+					else if(random[0] - this.currentx == -1){
+						//Going to left
+						this.cells[this.currentx][this.currenty].leftWall = false;
+						this.cells[this.currentx-1][this.currenty].rightWall = false;
+					}
+					
+					else if(random[1] - this.currenty == 1){
+						//Going to down
+						this.cells[this.currentx][this.currenty].downWall = false;
+						this.cells[this.currentx][this.currenty+1].upWall = false;
+					}
+					
+					else if(random[1] - this.currenty == -1){
+						//Going to up
+						this.cells[this.currentx][this.currenty].upWall = false;
+						this.cells[this.currentx][this.currenty-1].downWall = false;
+					}
+					
+					this.currentx = random[0];
+					this.currenty = random[1];
+					this.cells[this.currentx][this.currenty].visitC = 1;
+					this.path.push([this.currentx,this.currenty]);
+					this.cellCount++
+				}
+				else{
+					//Go back
+					this.cells[this.currentx][this.currenty].visitC = 2;
+					this.path.pop();
+					
+					this.currentx = this.path[this.path.length-1][0];
+					this.currenty = this.path[this.path.length-1][1];
+				}
+				
+				
+				if(this.cellCount < this.h * this.w - 1){ 
+				//If all cells are visited
+					this.generate();
+				}
+			}
+			Maze.prototype.draw = function(){
+				this.cellSizeX = canvas.width / this.w;
+				this.cellSizeY = canvas.height / this.h;
+				
+				for(var i = 0; i < this.w; i++){
+					for(var j = 0; j < this.h; j++){
+						if(this.cells[i][j].rightWall){
+							ctx.beginPath();
+							ctx.moveTo(i*this.cellSizeX+this.cellSizeX, j*this.cellSizeY);
+							ctx.lineTo(i*this.cellSizeX+this.cellSizeX, j*this.cellSizeY+this.cellSizeY);
+							ctx.stroke();
+						}
+						if(this.cells[i][j].leftWall){
+							ctx.beginPath();
+							ctx.moveTo(i*this.cellSizeX, j*this.cellSizeY);
+							ctx.lineTo(i*this.cellSizeX, j*this.cellSizeY+this.cellSizeY);
+							ctx.stroke();
+						}
+						if(this.cells[i][j].upWall){
+							ctx.beginPath();
+							ctx.moveTo(i*this.cellSizeX, j*this.cellSizeY);
+							ctx.lineTo(i*this.cellSizeX+this.cellSizeX, j*this.cellSizeY);
+							ctx.stroke();
+						}
+						if(this.cells[i][j].downWall){
+							ctx.beginPath();
+							ctx.moveTo(i*this.cellSizeX, j*this.cellSizeY+this.cellSizeY);
+							ctx.lineTo(i*this.cellSizeX+this.cellSizeX, j*this.cellSizeY+this.cellSizeY);
+							ctx.stroke();
+						}
+					}
+				}
+			}
+			
+			
+			var maze = new Maze(25,25);
+			maze.generate();
+			maze.draw();
+		</script>
+	</body>
+</html>

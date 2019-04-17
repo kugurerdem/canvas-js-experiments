@@ -1,0 +1,167 @@
+<html>
+<head>
+	<title> snake </title>
+</head>
+<body>
+<center> <canvas id="canvas" width="500" height="500" style="border:2px solid #000000;"> </canvas> 
+<p id="demo"> Score: 0</p>
+</center>
+<script>
+	
+	var canvas = document.getElementById("canvas");
+	var ctx = canvas.getContext("2d");
+	var W = canvas.width;
+	var H = canvas.height;
+	
+	// INPUTS FROM USER
+	document.onkeydown = keyDown;
+	document.onkeyup = keyUp;
+
+	var keys = [];
+
+	function keyDown(e) {
+		e = e || window.event;
+		keys[e.keyCode] = true;
+	}
+
+	function keyUp(e) {
+		e = e || window.event;
+		keys[e.keyCode] = false;
+	}
+	
+	//Game
+	function Game(){
+		this.gameFPS = 10;
+		
+		this.loop = function(){
+			THIS = this;
+
+			snake.update();
+			if( snake.tail[0].isColliding(food) ){
+				snake.tail.push ( new Cell( -20,-20,20,20,"black" ) );
+				food.setFood();
+			}
+			
+			if (snake.tail[0].x < 0 || snake.tail[0].x > W-snake.tail[0].w || snake.tail[0].y < 0 ||snake.tail[0].y > H-snake.tail[0].h){
+				snake.death();
+			}
+			
+			ctx.clearRect(0,0,W,H);
+			food.draw();
+			snake.draw();
+			document.getElementById("demo").innerHTML = "Score: " + (snake.tail.length-1)*5;
+			setTimeout(function(){THIS.loop();}, 1000/this.gameFPS);
+		}
+	}
+	//snake	
+	var snake = {
+		vx: 0, vy:0,
+		tail: [ new Cell( 240,240,20,20,"black" ) ],
+		isUp: false, isDown: false, isLeft: false, isRight: false,
+		
+		update: function(){			
+			if(keys[37] && !this.isRight){
+				this.vx = -this.tail[0].w; //LEFT
+				this.vy = 0;
+				this.isLeft = true;
+				this.isDown = false; this.isUp = false;
+			}
+			if(keys[39] && !this.isLeft){
+				this.vx = this.tail[0].w; //RIGHT
+				this.vy = 0
+				this.isRight = true;
+				this.isDown = false; this.isUp = false;
+			}
+			if(keys[38] && !this.isDown){ 
+				this.vy = -this.tail[0].h; //UP
+				this.vx = 0;
+				this.isUp = true;
+				this.isLeft = false; this.isRight = false;
+				
+			}
+			if(keys[40] && !this.isUp){ 
+				this.vy = this.tail[0].h; //DOWN
+				this.vx = 0;
+				this.isDown = true;
+				this.isLeft = false; this.isRight = false;
+			}
+			
+			for(var i=this.tail.length-1; i>0; i--){
+				snake.tail[i].x = snake.tail[i-1].x;
+				snake.tail[i].y = snake.tail[i-1].y;
+			}
+			
+			snake.tail[0].x+= this.vx;
+			snake.tail[0].y+= this.vy;
+			
+			for(var i=1; i<this.tail.length; i++){
+				if( snake.tail[0].isColliding(snake.tail[i]) ){
+					this.death();		
+				}
+			}
+				
+		},
+				
+		draw: function(){
+			for(var i=0; i<this.tail.length; i++){ 
+				this.tail[i].draw();
+			}
+		},
+		
+		death: function(){
+			this.tail.splice(0,this.tail.length);
+			this.tail.push( new Cell( 240,240,20,20,"black" ) );
+			food.setFood();
+			this.isUp= false; this.isDown= false; this.isLeft= false; this.isRight= false;
+			this.vx = 0; this.vy = 0;
+		}
+	};
+	
+	//food
+	function food() {
+		this.setFood= function(){
+			Final_condition = true;
+			while(Final_condition){
+				condition = false;
+				food.x = Math.floor( (W/ food.w) * Math.random()) * food.w;
+				food.y = Math.floor( (H/food.h) * Math.random()) * food.h;
+				for(i=0; i<snake.tail.length; i++){
+					if( snake.tail[i].isColliding(food) ){
+					 condition = true;
+					}
+				}
+				if(!condition) Final_condition = false;
+			}
+		};
+	} 
+	
+	food.prototype = new Cell(400,260,20,20,"red");
+	var food = new food();
+	
+	//cell class
+	function Cell(x,y,w,h,color){
+		this.x = x;
+		this.y = y;
+		this.w = w;
+		this.h = h;
+		this.color = color;
+		
+		this.draw = function(){
+			ctx.strokeStyle = 'white';
+			ctx.strokeRect(this.x,this.y,this.w,h);
+	        ctx.fillStyle = this.color;
+			ctx.fillRect(this.x,this.y,this.w,this.h);
+		}
+		
+		this.isColliding=function(obj){
+			return this.x < obj.x + obj.w && this.y< obj.y+obj.h && obj.x< this.x+this.w && obj.y < this.y+this.h;
+		}
+	}
+	
+	function AABBIntersect(ax,ay,aw,ah,bx,by,bw,bh){
+		return ax<bx+bw && ay<by+bh && ay<by+bh && bx<ax+aw && by < ay+ah;
+	}
+	
+	game = new Game();
+	game.loop();
+</script>

@@ -1,0 +1,176 @@
+<html>
+	<head> 
+		<title>	pong </title>
+	</head>
+	<body>
+		<center> <canvas id="canvas" width="650" height="550" style="border:2px solid #000000;"> </canvas> 
+		<p id="demo"></p>
+		</center>
+		<script>
+			//Canvas values
+			var canvas = document.getElementById("canvas");
+			var ctx = canvas.getContext("2d");
+			var W = canvas.width;
+			var H = canvas.height;
+			
+			var objects = new Array();
+						
+			var FPS = 60;
+			var keystate = {};
+			//37 left 39 right 38 up 40 down
+			document.onkeydown = function(e){
+				e = e || window.event;
+				keystate[e.keyCode] = true;
+			}
+			
+			document.onkeyup = function(e){
+				e = e || window.event;
+				keystate[e.keyCode] = false;
+			}
+			
+			
+			//Player class
+			function Player(){
+				this.w = 15;
+				this.h = 100;
+				this.x = 15;
+				this.y = H/2 - this.h/2;
+				
+				this.movespeed = 5;
+				this.vx = 0; 
+				this.vy = 0;
+				
+				this.update = function(){
+					if(keystate[38]) this.vy = -this.movespeed;
+					if(keystate[40]) this.vy = this.movespeed;
+					
+					if(this.y+this.vy < 0 || this.y+this.vy+this.h> H){
+						this.sign = this.vx < 0 ? -1 : 1;
+						while(!this.y + this.sign < 0 || !this.y+this.vy+this.h>H){
+							this.y+= this.sign;
+						}
+						this.vy = 0;
+					}
+					
+					this.x += this.vx;
+					this.y += this.vy;
+					
+					this.vx = 0;
+					this.vy = 0;
+				}
+			}
+			
+			
+			//Food class	
+			function Ball(){
+				this.w = 15;
+				this.h = 15;
+				this.x = W/2 -this.w/2;
+				this.y = H/2 -this.h/2;
+				this.radian = (Math.random() > 0.5 ? 180 : 0)* Math.PI/180;
+				this.radian += (Math.random() > 0.5 ? 1 : -1)* 30 * Math.random() * Math.PI/180;
+				this.speed = 8;
+				this.vx = Math.cos(this.radian) * 6;
+				this.vy = Math.sin(this.radian) * 6;
+				
+				this.update = function(){					
+					
+					this.x+= this.vx;
+					this.y+= this.vy;
+					
+					if(this.y+this.h+this.vy> H){ 
+						this.y = H-this.h;
+						this.vy *= -1 ;
+					}
+					if(this.y+this.vy< 0){
+						this.y = 0;
+						this.vy *= -1;
+					}
+					
+					if(this.x < 0 || this.x > W){
+						this.x = W/2 - this.w/2;
+						this.y = H/2 -this.h/2;
+						this.radian = (Math.random() > 0.5 ? 180 : 0)* Math.PI/180;
+						this.radian += (Math.random() > 0.5 ? 1 : -1)* 30 * Math.random() * Math.PI/180;
+						this.vx = Math.cos(this.radian) * 6;
+						this.vy = Math.sin(this.radian) * 6;
+					}
+					
+					if( isCollisionBetween(player,food) ){
+						this.x = player.x + player.w + 1;
+
+						var n = (this.y+this.h - player.y)/(player.h+this.h);
+						var phi = 0.25*Math.PI*(2*n - 1); // pi/4 = 45
+						// calculate smash value and update velocity
+						var smash = Math.abs(phi) > 0.2* Math.PI ? 1.5 : 1;
+						this.vx = smash * this.speed * Math.cos(phi);
+						this.vy = smash * this.speed * Math.sin(phi);
+					}
+					
+					if( isCollisionBetween(ai,food) ){
+						this.x = ai.x - this.w - 1;
+
+						var n = (this.y+this.h - ai.y)/(ai.h+this.h);
+						var phi = 0.25*Math.PI*(2*n - 1); // pi/4 = 45
+						// calculate smash value and update velocity
+						var smash = Math.abs(phi) > 0.2* Math.PI ? 1.5 : 1;
+						this.vx = -1* smash * this.speed * Math.cos(phi);
+						this.vy = smash * this.speed * Math.sin(phi);
+					}
+					
+				}
+			}
+			
+			
+			//Artificial Intelligence
+			function AI(){
+				this.w = 15;
+				this.h = 100;
+				this.x = W-30;
+				this.y = H/2 - this.h/2;
+				this.vy = 0;
+
+				this.update = function(){
+					this.vy = food.y - (this.h - food.h)*0.5;
+					this.y += (this.vy - this.y) * 0.08;
+					// keep the paddle inside of the canvas
+					this.y = Math.max(Math.min(this.y, H - this.h), 0);
+				}
+			}
+			
+			
+			function isCollisionBetween(obj1,obj2){
+				return obj1.x < obj2.x + obj2.w && obj1.y<obj2.y+obj2.h && obj2.x<obj1.x+obj1.w && obj2.y < obj1.y+obj1.h;
+			}
+			
+			
+			var player = new Player();
+			var food = new Ball();
+			var ai = new AI();
+			
+			objects.push(player);
+			objects.push(food);
+			objects.push(ai);
+			
+			function loop(){
+				ctx.fillStyle = "black";
+				ctx.fillRect(0,0,W,H);
+				
+				for(var i = 0; i < objects.length; i++){
+					objects[i].update();
+				}
+				
+				for(var i = 0; i < objects.length; i++){
+					ctx.fillStyle = "white";
+					ctx.fillRect(objects[i].x,objects[i].y,objects[i].w,objects[i].h);
+				}
+
+				
+				setTimeout(function(){ loop();},1000/FPS);
+			}
+			
+			loop();
+			
+		</script>
+	</body>
+</html>

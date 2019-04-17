@@ -1,0 +1,71 @@
+<html>
+	<head>
+		<title> Circles </title>
+	</head>
+	<body>
+		<center> 
+			<canvas id="canvas" width="600" height="600">	
+			<p id="demo"> 				
+		</center>
+		
+		<script>
+			//Canvas values
+			var canvas = document.getElementById("canvas");
+			var ctx = canvas.getContext("2d");
+			var W = canvas.width;
+			var H = canvas.height;
+			
+			var circles = {};
+			var circleIndex = 0;
+			
+			function Circle(){
+				this.x = W/2;
+				this.y = H/2;
+				this.r = 0;
+				this.color = 360 * Math.random();
+				this.count = 0;
+				this.maxcount = 100;
+				
+				circles[circleIndex] = this;
+				this.id = circleIndex;
+				circleIndex++
+			}
+			Circle.prototype.draw = function(){
+				 ctx.fillStyle= "hsl("+this.color+",100%,50%)"; 
+				 ctx.beginPath(); 
+				 ctx.arc(this.x, this.y, this.r, 0, 2*Math.PI);
+				 ctx.fill();
+				 
+				 if(this.r < W/2) this.r += 0.5;
+				 //if(this.color < 365) this.color += 0.7;
+				 if(this.r >= W/2){
+					this.count++
+				 }
+				 if(this.count >= this.maxcount){
+					delete circles[this.id];
+				 }
+			}
+			
+			function addCircle(){
+				new Circle();
+				setTimeout(function(){ addCircle(); } , 1000);
+			}
+			addCircle();
+			
+			function loop(){
+				ctx.clearRect(0,0,W,H);
+				
+				
+				for(var i in circles){
+					circles[i].draw();
+				}
+				
+				requestAnimationFrame(loop);
+			}
+			
+			loop();
+		
+		</script>
+	</body>
+</html>
+		

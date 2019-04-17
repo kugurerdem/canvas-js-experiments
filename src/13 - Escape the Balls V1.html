@@ -1,0 +1,210 @@
+
+<html>
+<head>  
+</head>
+<body> 
+
+<canvas id="canvas" width="500" height="500" style="border:2px solid #000000;"> </canvas>
+<p id="demo"> </p>
+<p id="demo2"> </p>
+<script>
+
+//Canvas values
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+
+var W = canvas.width;
+var H = canvas.height;
+
+var objects = [];
+//This is our main character
+var snake={
+  
+  parts: [],
+//Limits of the snake long  
+  limit: function(){
+     while(this.parts.length>=10){
+	   this.parts.splice(0,1);
+	  } 
+   },
+   
+  headr: 5, 
+   
+  draw: function(){
+     this.limit();
+  
+	 //Draw head	    
+     ctx.beginPath();
+	 ctx.fillStyle = "#c82124"; //red
+     ctx.arc(snake.parts[snake.parts.length-1][0], snake.parts[snake.parts.length-1][1], this.headr, 0, Math.PI*2, true);
+     ctx.fill();
+	 ctx.closePath();
+	 		 
+    //Draw parts	 
+	 for(i=0; i<this.parts.length; i++){
+          ctx.beginPath();
+          ctx.strokeStyle='#00cc00'; //green
+		  ctx.moveTo(this.parts[i][0], this.parts[i][1]);
+          ctx.lineTo(this.parts[i+1][0], this.parts[i+1][1]);
+		  ctx.stroke();
+          ctx.closePath();
+	    }
+    },
+//deletes snake parts
+  del: function(){
+    if( snake.parts.length>=2){
+      snake.parts.splice(0,1);
+    }
+  }
+}
+
+//Gets mouse coordinates every move
+document.onmousemove=MouseMove;
+
+function MouseMove(){
+	MouseY=event.y -8;
+	MouseX=event.x -8;
+	coords= " X: " + MouseX + " Y: " +MouseY;
+    document.getElementById("demo").innerHTML = coords ;    
+	snake.parts[snake.parts.length]= [MouseX,MouseY];	
+}
+
+// Ball class
+function Ball(x,y,vx,vy,r,color){
+   
+   this.x = x;
+   this.y = y;
+   this.vx = vx; 
+   this.vy = vy;
+   this.radius = r;
+   this.color = color;
+   
+   this.mov = function(){
+     this.x += this.vx;
+     this.y += this.vy;	 
+   }
+   
+   this.draw= function(){ 
+	  
+	  this.mov();
+	  
+	  ctx.beginPath();
+	  ctx.fillStyle = this.color; //red
+      ctx.arc(this.x, this.y, this.radius, 0, Math.PI*2, true);
+      ctx.fill();
+	  ctx.closePath();
+	 
+	 }
+} 
+
+var ball=[];
+//Adds the ball
+function addBall(x,y,vx,vy,r,color){
+   ball[ball.length]= new Ball(x,y,vx,vy,r,color);   
+}
+
+//It will add balls randomly over and over
+function addingballs(){
+   // We don't want to ball spawn over to the our snake position :P 
+  do{ 
+    xball= Math.random()*W;
+    yball= Math.random()*H;
+   
+    delanglex = Math.abs(snake.parts[snake.parts.length-1][0] - xball) ;
+    delangley = Math.abs(snake.parts[snake.parts.length-1][0] - yball) ;
+    disanglence = Math.sqrt(delanglex*delanglex + delangley*delangley );
+   } while(disanglence < 100);
+   
+   directionx= Math.random() <= 0.5 ? 1 : -1 ;
+   directiony= Math.random() <= 0.5 ? 1 : -1 ;
+   
+   addBall(xball, yball, (1+Math.random()*2) * directionx, (1+Math.random()* 2) * directiony, 5, "white" );
+   
+   //If ball length > 95 stop addingballs
+   if(ball.length > 95){
+     clearInterval(addballs);
+   }
+   
+}
+
+addBall(15,15,-1,-1,4,"white");
+
+//Checks the wall
+function wallCheck(){
+  
+    for(i=0; i<ball.length; i++){
+	
+	    if(ball[i].y + ball[i].radius > H){
+	       ball[i].y = H - ball[i].radius -2;
+		   ball[i].vy = ball[i].vy * -1;
+	    }
+	   
+	    else if( ball[i].y < ball[i].radius) {
+	       ball[i].y = ball[i].radius +2;
+           ball[i].vy = ball[i].vy * -1;		
+        }
+	   
+	    if( ball[i].x + ball[i].radius > W){
+	       ball[i].x = W - ball[i].radius -2;
+		   ball[i].vx = ball[i].vx * -1;
+	    }
+        else if ( ball[i].x < ball[i].radius){
+	       ball[i].x = ball[i].radius +2;
+		   ball[i].vx = ball[i].vx * -1;
+ 	    } 
+		
+	}
+}
+
+
+//
+function SnakeBallCollision(){
+        
+	for(i=0; i<ball.length; i++){
+		
+		dx= snake.parts[snake.parts.length-1][0] - ball[i].x;
+        dy= snake.parts[snake.parts.length-1][1] - ball[i].y;
+	    d= Math.sqrt(dx*dx + dy*dy);
+	
+	    if( d < snake.headr + ball[i].radius){
+          alert("YOU LOSE!");	
+          ball = null;
+          ball = [];		 
+
+          clearInterval(addballs);
+		  addballs = null;
+          addballs = setInterval(addingballs, 1000);		  
+		} 
+   }
+}
+
+//All simulation
+function AllSimulation(){
+  wallCheck();
+  SnakeBallCollision();
+}
+//GAME LOOPS OVER HERE
+function gameLoop(){
+      	   
+   document.getElementById("demo2").innerHTML = "BALLS: "+ ball.length ;
+
+   AllSimulation();
+   
+   ctx.fillStyle="black";
+   ctx.fillRect(0,0, W,H); 
+   
+   for(i=0; i<ball.length; i++){
+   ball[i].draw();
+   }
+   
+   snake.draw();
+
+   }
+      
+var game = setInterval(gameLoop, 1000/60);
+var snakedel = setInterval( snake.del, 50);
+var addballs = setInterval(addingballs, 1000);
+
+
+
+</script>

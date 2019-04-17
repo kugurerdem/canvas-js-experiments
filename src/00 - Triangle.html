@@ -1,0 +1,44 @@
+<html>
+<head> </head>
+<body>
+<canvas id="canvas1" width="300" height="300"></canvas>
+</body>  
+<script>
+window.onload = draw; // Execute draw function when DOM is ready
+function draw() {
+     // Assign our canvas element to a variable 
+    var canvas = document.getElementById("canvas1");
+    // Create the HTML5 context object to enable draw methods
+    var ctx = canvas.getContext("2d"); 
+	
+   var ctx=canvas.getContext('2d');
+   var x= 0;
+   var inc= 1;
+   
+   
+ function gameLoop() {
+    ctx.beginPath();
+    
+    
+    ctx.clearRect(0, 0, 300, 300);
+	ctx.moveTo(50-x*4,100);
+    ctx.lineTo(100,100-x*4);
+	ctx.moveTo(100-x*4,100);
+	ctx.lineTo(75,75-x*5);
+	ctx.moveTo(75-x*4,75)
+	ctx.lineTo(50,100-x*5);
+	ctx.stroke();
+	
+	x= x+inc;
+	if(x>=10) inc=-inc;
+	else if(x<=0) inc=1;
+	
+	}
+	
+ setInterval(gameLoop, 110);
+
+}
+</script>
+
+
+</html>

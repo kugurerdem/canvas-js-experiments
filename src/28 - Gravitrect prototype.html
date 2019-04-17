@@ -1,0 +1,203 @@
+<html>
+	<head>
+		<title> SQRT: Gravitron </title>
+	</head>
+	<body>
+		<center>
+			<canvas id="canvas" width="600" height="300" style="border:2px solid #000000;"> </canvas>
+		</center>
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+		
+		<script>
+			//Inputs
+			var keystate = {};
+						
+			document.onkeydown = function(e){
+				e = e || window.event;
+				keystate[e.keyCode] = true;
+			}
+						
+			document.onkeyup = function(e){
+				e = e || window.event;
+				keystate[e.keyCode] = false;
+			}
+			
+			//Canvas values
+			var canvas = document.getElementById("canvas");
+			var ctx = canvas.getContext("2d");
+			var W = canvas.width;
+			var H = canvas.height;
+			
+			var showscene = 0;
+			
+			function Game(){
+				this.gameFPS = 200;
+				this.renderFPS = 60;
+				
+				this.isRendering = false;
+				
+				this.scenes = new Array();
+				
+				this.addScene = function(scene){
+					this.scenes.push(scene);
+				}
+				
+				this.start = function(){
+					this.gameLoop();
+				}
+				
+				this.startRender = function(){
+					this.render();
+				}
+				
+				this.gameLoop = function(){
+					if(!this.isRendering){
+						this.isGameLooping = true;
+						
+						THIS = this;
+						
+						for(var i = 0; i < this.scenes[showscene].gameObjects.length; i++){
+							this.scenes[showscene].gameObjects[i].update();
+						}
+						
+						this.isGameLooping = false;
+						
+						setTimeout(function(){THIS.gameLoop();}, 1000/this.gameFPS);
+					} else{
+						setTimeout(function(){THIS.gameLoop();}, 20);
+					}
+				}
+				
+				this.render = function(){
+					if(!this.isGameLooping){
+						this.isRendering = true;
+						
+						player.draw();
+						
+						for(var i = 0; i < this.scenes[showscene].gameObjects.length; i++){
+							this.scenes[showscene].gameObjects[i].draw();
+						}
+						
+						this.isRendering = false;
+						setTimeout(function(){THIS.render();}, 1000/this.renderFPS);
+					} else{
+						this.isRendering = true;
+						setTimeout(function(){THIS.render();}, 0);
+					}
+				}
+			}
+			
+			function Scene(){
+				this.gameObjects = new Array();
+				this.addGameObject = function(gameObject){
+					this.gameObjects.push(gameObject);
+				}
+			}
+			
+			function GameObject(){
+				this.position = null;
+				this.dimention = null;
+				this.color = null;
+				this.vy = 0;
+				this.vx = 0;
+				
+				this.isColliding = function(x,y,obj){				
+					return x < obj.position.x + obj.dimention.w && 
+							y < obj.position.y + obj.dimention.h && 
+							obj.position.x < x + this.dimention.w && 
+							obj.position.y < y + this.dimention.h;
+				}
+				
+				this.update = function(){}
+				
+				this.draw = function(){
+					ctx.fillStyle = this.color;
+					ctx.fillRect(this.position.x, this.position.y, this.dimention.w, this.dimention.h);
+				}
+			}
+			
+			function Position(x,y){
+				this.x = x;
+				this.y = y;
+			}
+			
+			function Dimention(w,h){
+				this.w = w; 
+				this.h = h;
+			}
+			
+			function Player(){
+				this.color = "white";
+				this.grav = 0.01;
+				this.acc = 0.01;
+				
+				this.update = function(){
+					this.move = 0;
+					if(keystate[37]){ this.vx-=this.acc; }
+					if(keystate[39]){ this.vx+=this.acc; }
+					
+					//Gravity calculates
+					this.vy += this.grav; 
+				
+					//Slowing down
+					if(!keystate[37] && !keystate[39]){
+						this.vx = this.vx * 0.99;
+					}
+					
+					this.position = new Position(this.position.x + this.vx , this.position.y + this.vy);
+					
+					
+					//If player out of canvas values
+					if(this.position.y+this.dimention.h > H){
+						this.position = new Position(this.position.x, H-this.dimention.h);
+						this.grav *= -1;
+						this.vy = 0;
+					}
+					
+					if(this.position.y < 0){
+						this.position = new Position(this.position.x, 0);
+						this.grav *= -1;
+						this.vy = 0;
+					}
+					
+					if(this.position.x < 0 - this.dimention.w){
+						this.position = new Position(W+ this.dimention.w,this.position.y);
+					}
+					
+					if(this.position.x > W + this.dimention.w){
+						this.position = new Position(0 - this.dimention.w, this.position.y);
+					}
+				}
+			}
+			Player.prototype = $.extend({}, new GameObject, new Player);
+			
+			function Enemy(){
+				this.isBad = true;
+			}
+			Enemy.prototype = $.extend({}, new GameObject, new Enemy);
+			
+			var game = new Game();
+			
+			var background = new GameObject();
+			background.position = new Position(0,0);
+			background.dimention = new Dimention(W,H);
+			background.color = "black";
+			
+			
+			var scene_0 = new Scene();
+			var player = new Player();
+			player.position = new Position(50,50);
+			player.dimention = new Dimention(20,20);
+			scene_0.addGameObject(background);
+			scene_0.addGameObject(player);
+			game.addScene(scene_0);
+			
+			game.start();
+			game.startRender();
+			
+			
+			
+		</script>
+	</body>
+</html>

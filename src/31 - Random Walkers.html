@@ -1,0 +1,71 @@
+<html>
+	<head>
+		<title> Walking dot </title>
+	</head>
+	<body>
+		<center>
+			<canvas id="canvas" width="250" height="250" style="border:2px solid;">
+		</center>
+		
+		<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"> </script>
+		<script> 
+			//Canvas values
+			var canvas = document.getElementById("canvas");	
+			var ctx = canvas.getContext("2d");
+			var W = canvas.width;
+			var H = canvas.height;
+			
+			var FPS = 30;
+			var objects = [];
+			
+			//Walking Dot Class 
+			function WalkingDot(x,y,color){
+				this.x = x;
+				this.y = y;
+				
+				this.color = color; 
+				
+				this.draw = function(){
+					
+					ctx.lineWidth = 3;
+					ctx.strokeStyle = this.color;
+					
+					this.radius = 360 * Math.random() * (Math.PI/180);
+					
+					ctx.beginPath();
+					ctx.moveTo(this.x,this.y);
+				
+					this.x = Math.min(Math.max(this.x+Math.cos(this.radius)*3,0),W); 
+					this.y = Math.min(Math.max(this.y+Math.sin(this.radius)*3,0),H);
+				
+					ctx.lineTo(this.x,this.y);
+					ctx.stroke();
+				}
+			}
+			
+			for(var i=0; i < 15; i++) objects.push(new WalkingDot(W/2,H/2,"white"));
+				objects.push(new WalkingDot(W/2,H/2,"red"));
+				objects.push(new WalkingDot(W/2,H/2,"orange"));
+				objects.push(new WalkingDot(W/2,H/2,"green"));
+				objects.push(new WalkingDot(W/2,H/2,"gray"));
+				objects.push(new WalkingDot(W/2,H/2,"blue"));
+				objects.push(new WalkingDot(W/2,H/2,"aqua"));
+				objects.push(new WalkingDot(W/2,H/2,"black"));
+				objects.push(new WalkingDot(W/2,H/2,"yellow"));
+				
+			function loop(){
+				
+				for(var i = 0; i < objects.length; i++){
+					objects[i].draw();
+				}
+						
+				setTimeout(function(){loop();}, 1000/FPS);
+			}
+		
+		
+			loop();
+			
+		</script>
+		
+	</body>
+</html>
