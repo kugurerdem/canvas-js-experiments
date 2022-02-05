@@ -1,0 +1,129 @@
+<html> 
+	<head> 
+		<title> Neuron </title>
+	</head>
+	<body>
+		<p id ="output"></p> 
+		<center>
+			<canvas id="myCanvas" width="500" height="500" style="border:1px solid #c3c3c3;">
+				Your browser does not support the HTML5 canvas tag.
+			</canvas>
+		<center>
+		
+		<script>
+			function decbin(dec,length){
+			  var out = "";
+			  while(length--)
+				out += (dec >> length ) & 1;    
+			  return out;  
+			}
+			
+			function print(output){
+				document.getElementById("output").innerHTML = output;
+			}
+			
+			//Canvas değerleri
+			var c = document.getElementById("myCanvas");
+			var ctx = c.getContext("2d"); 
+			var W = c.width;
+			var H = c.height;
+		
+			//Neuron sınıfı
+			var Neuron = function(){
+				this.dendrites = new Array(); // Bu hücreye bağlanan nöronlar (alıcı)
+				this.synapses = new Array(); // Bu hücrenin bağlı olduğu nöronlar / Akson ucu (verici)
+				this.dendrite_load = 1000 * Math.random(); // Dendritteki kimyasal miktarı 
+				this.synapses_impact_load = 1; // Sinapstaki kimyasal miktarı  
+				this.axon_length = 20; // Akson uzunluğu , 10 bitlik sayı
+				this.axon_load = 0;
+				this.dendrite_load_halflife = 2; // Dendritteki kimyasal miktarın kaç döngüde bir yarıya ineceğinin miktarı 
+				this.decrement_on_impulse = 10; // Impulse anındaki boşaltılan yük miktarı
+				this.threshold = 70 * Math.random(); // Eşik seviyesi
+				this.axon_impulse_bit = 1 << (this.axon_length-1);
+			}
+			
+			var NeuronsNumberx = 50;
+			var NeuronsNumbery = 20;
+			var NeuronsNumber = NeuronsNumberx * NeuronsNumbery;
+			var Brain = new Array();
+			
+			for(var i=0; i<NeuronsNumber; i++){
+				Brain.push(new Neuron());
+			}
+			
+			//Bağlanma işlemi
+			for(var i=0; i < Brain.length; i++){
+				//for(var j = 0; j < Brain.length; j++){
+				//	if(j!=i){
+				//		Brain[i].dendrites.push(Brain[j]);
+				//		Brain[i].synapses.push(Brain[j]);
+				//	}
+				//}
+				
+				for(var j = 0; j < Brain.length * Math.random() * 0.3; j++){
+					var r = Math.floor(Brain.length * Math.random());
+					if(r!=i){
+						Brain[i].dendrites.push(Brain[r]);
+						Brain[i].synapses.push(Brain[r]);
+					}
+				}
+				
+				//Brain[i-1].synapses.push(Brain[i]);				
+			}	
+			
+			
+			//Döngü
+			function loop(){
+				var n = Brain[0];
+				var t = "";
+				t += "<br>Load:" + n.dendrite_load;
+				t += "<br>Axon Load:" + decbin(n.axon_load, 10);
+				t += "<br>bit:" + decbin(n.axon_impulse_bit, 10);
+				t += "<br>trshld:" + n.threshold;
+				//t += "<br>" + ;
+				print(t);
+				
+				Brain[0].dendrite_load += 10 * Math.random();
+				//Brain[20].axon_load = 0xFF;
+				for(var i = 0; i < Brain.length; i++){
+					//BKZ : BITWISE OPERATIONS
+					var NeuroTransmitt = Brain[i].axon_load & 1;
+					Brain[i].axon_load = Brain[i].axon_load >> 1;
+
+					if(NeuroTransmitt == 1){
+						for(var j = 0; j < Brain[i].synapses.length; j++){
+							Brain[i].synapses[j].dendrite_load += Brain[i].synapses_impact_load; 
+						}
+					}
+					
+					if(Brain[i].dendrite_load > Brain[i].threshold){
+						visualization(i,"red");
+						Brain[i].axon_load |= Brain[i].axon_impulse_bit; 
+						Brain[i].dendrite_load -= Brain[i].decrement_on_impulse;
+						Brain[i].dendrite_load = (Brain[i].dendrite_load < 0 ? 0 : Brain[i].dendrite_load); 
+					} else{
+						visualization(i,"black");
+					}
+					//Brain[i].threshold = (10*Brain[i].threshold + Brain[i].dendrite_load) / 11;
+					Brain[i].dendrite_load = Brain[i].dendrite_load / Math.pow(2, 1/Brain[i].dendrite_load_halflife); // 
+				}
+				
+				for(var i = 0; i < Brain.length; i++){
+				}
+								
+				setTimeout(loop, 100);
+			}
+			
+			function visualization(i,color){
+				var x = i % NeuronsNumberx;
+				var y = Math.floor(i / NeuronsNumberx);
+
+				ctx.fillStyle = color;
+				ctx.fillRect(x * W/NeuronsNumberx, y * H/NeuronsNumbery ,8,8);
+		    }
+			
+			loop();
+			
+		</script>
+	</body>
+</html>
